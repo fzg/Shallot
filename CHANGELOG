@@ -1,3 +1,7 @@
+Changed from shallot-0.0.3 to shallot-0.0.4:
+* Added '-i' to keep running after match.
+* Fixed option parsing to allow for ./shallot -h
+
 Changed from shallot-0.0.2 to shallot-0.0.3:
 
 * Fixed some memory leaks.

@@ -28,6 +28,8 @@
  * - allow -m to be used with -f (use file for status output) [v0.0.3]
  */
 
+int infinite = 0;
+
 #include "config.h"
 
 #include "math.h"
@@ -146,6 +148,9 @@ int main(int argc, char *argv[]) { // onions are fun, here we go
           daemon = 1;
           break;
         }
+        case 'h': {
+          usage(); exit(0);
+        }
         case 'm': { // monitor
           monitor = 1;
           break;
@@ -181,7 +186,10 @@ int main(int argc, char *argv[]) { // onions are fun, here we go
           dbreak = 1;
           break;
         }
-
+        case 'i' : {// infinite
+            infinite = 1;
+            break;
+        }
         case 'e': { // e limit
           if((argv[x][y + 1] != '\0') || (x + 1 > argc)) {
             fprintf(stderr, "Error: -e format is '-e limit'\n");
@@ -221,7 +229,8 @@ int main(int argc, char *argv[]) { // onions are fun, here we go
   char *pattern = argv[argc - 1];
 
   if(*pattern == '-')
-    error(X_REGEX_INVALID);
+    if (pattern[1] == 'h') { usage(); exit(0);}
+  else error(X_REGEX_INVALID);
 
   regex = malloc(REGEX_COMP_LMAX);
 
@@ -269,6 +278,7 @@ int main(int argc, char *argv[]) { // onions are fun, here we go
   pthread_t thrd;
 
   // create our threads for 2+ cores
+  beg:
   for(x = 1; x < threads; x++) {
 
     if(pthread_create(&thrd, NULL, worker, &optimum))
@@ -286,6 +296,10 @@ int main(int argc, char *argv[]) { // onions are fun, here we go
   if(pthread_self() != lucky_thread) { // be safe and avoid EDEADLK
 
     pthread_join(lucky_thread, NULL); // wait for the lucky thread to exit
+  }
+  if (infinite) {
+    found = 0;
+    goto beg;
   }
 
   regfree(regex);
